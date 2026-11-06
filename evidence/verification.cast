@@ -1,0 +1,12 @@
+{"version": 2, "width": 110, "height": 36, "timestamp": 1793934847, "idle_time_limit": 2.0, "env": {"SHELL": "/bin/zsh", "TERM": "dumb"}}
+[0.039992, "o", "Docker Shell sandbox + Cline local verification\r\nHost: macOS 15.4.1 arm64; sandbox: Linux aarch64\r\nsbx 0.46.0; Cline CLI 3.0.74; Flask 3.1.2\r\nAuth probe: completed using openai-codex/gpt-5.6-terra; response AUTH_OK\r\nUnattended Cline task: completed using openai-codex/gpt-5.6-terra\r\n\r\n$ sandbox branch and commit\r\n"]
+[0.416736, "o", "cline/health-route\r\n8d453345b237f5158e3efb061a4e6ee2eec1063a\r\nexit=0\r\n\r\n$ review fetched Cline diff\r\n"]
+[0.425508, "o", " app.py            |  5 +++++\r\n tests/test_app.py | 20 ++++++++++++++++++++\r\n 2 files changed, 25 insertions(+)\r\nexit=0\r\n\r\n$ Cline's committed unittest suite"]
+[0.425575, "o", "\r\n"]
+[0.790285, "o", "test_health_returns_ok_status (test_app.AppTestCase.test_health_returns_ok_status) ... ok\r\ntest_index_returns_welcome_message (test_app.AppTestCase.test_index_returns_welcome_message) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 2 tests in 0.007s\r\n\r\nOK\r\nexit=0\r\n"]
+[0.790422, "o", "\r\n$ live Flask HTTP workflow\r\n"]
+[1.283372, "o", "PASS GET /: HTTP 200 {\"message\": \"Hello from the sandbox lab\"}\r\nPASS GET /health: HTTP 200 {\"status\": \"ok\"}\r\nPASS GET /missing: HTTP 404\r\nFlask process stopped\r\nEXIT_CODE=0\r\nexit=0\r\n\r\n$ sandbox reads project marker\r\n"]
+[1.802188, "o", "PROJECT-MARKER-CLINE-2026-11-04\r\nexit=0\r\n\r\n$ sandbox attempts outside host marker\r\n"]
+[2.171916, "o", "cat: /private/tmp/docker-cline-sandbox-boundary/outside-marker.txt: No such file or directory\r\nexit=1\r\n\r\n$ host reads unchanged outside marker\r\n"]
+[2.175309, "o", "OUTSIDE-MARKER-CLINE-2026-11-05\r\nexit=0\r\n\r\nAll expected verification outcomes observed."]
+[2.175373, "o", "\r\n"]
