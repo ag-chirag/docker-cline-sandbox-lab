@@ -1,6 +1,6 @@
 # Verification record
 
-Recorded on November 5, 2026 (Pacific Time). This is a local Docker Shell sandbox run; no cloud sandbox was used. The short [terminal recording](verification.cast) shows the authentication probe, Cline's committed revision, the live HTTP checks, the test suite, and the file-boundary control. The [tool action record](cline-tool-actions.md) contains Cline's actual commands and outputs; the [exact prompt](../prompts/health-route.txt) is provided separately. Raw CLI JSON and operational logs were retained locally outside this repository.
+Recorded on November 5, 2026 (Pacific Time). This is a local Docker Shell sandbox run; no cloud sandbox was used. The short [terminal recording](verification.cast) prints an authentication/task summary and captures subsequent verification output for the committed revision, live HTTP checks, test suite, and file-boundary control. It does **not** visibly record the browser sign-in or the full Cline run. The [tool action record](cline-tool-actions.md) contains Cline's actual commands and outputs; the [exact prompt](../prompts/health-route.txt) is provided separately. Raw CLI JSON and operational logs were retained locally outside this repository.
 
 ## Environment and provenance
 
@@ -44,6 +44,12 @@ After fetching Cline's commit into the host repository, I reviewed every committ
 | Removal and preservation | `sbx rm cline-flask-lab --force` removed only the disposable sandbox; `sbx ls` reported no sandboxes, while the host repository still held Cline's exact commit and code. The synthetic outside host marker remained intact until its explicit cleanup. |
 
 The HTTP run exercised the actual listening application and a missing-route failure path. The file-boundary observation combines Cline's attempted read with direct shell controls; a model refusal alone would not establish isolation. The host project remained at the baseline until the sandbox branch was fetched and reviewed. Once fetched, the code survived sandbox deletion.
+
+## Fresh-clone replay correction
+
+After a review found that the baseline checkout lacks `prompts/health-route.txt`, I revised the README to read the prompt from pinned delivery commit `eedd7d251fde13710d803e3fe4aa49a05f4170da`. I cloned the private GitHub repository into a new disposable host directory, switched it to baseline `0352eea5c7ceaac3a5fab07a6edce67542368be8`, and confirmed the prompt file was absent from the working tree. `git show` retrieved the prompt from the pinned commit with SHA-256 `83b40a65ecea054aeb4551a9e25bd77f5358ee8c868904f86deb6958ef2d0535`.
+
+From that fresh baseline clone, `sbx create --clone` created a separate disposable Shell sandbox. The sandbox's `HEAD` and project marker matched the baseline. The documented shell substitution passed the prompt as one argument into the sandbox; Python inside the sandbox measured **1,443 bytes** and independently calculated the same SHA-256. I removed only this replay sandbox afterward, and `sbx ls` showed no sandboxes. This replay validates the prompt retrieval and host-to-sandbox handoff. It did not rerun Cline's paid model task; the original Cline-authored commit, JSON tool actions, and application end-to-end checks remain the evidence for that task.
 
 ## Limits
 

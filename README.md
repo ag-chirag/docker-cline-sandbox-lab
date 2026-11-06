@@ -25,11 +25,12 @@ git --version
 git clone https://github.com/ag-chirag/docker-cline-sandbox-lab.git
 cd docker-cline-sandbox-lab
 git switch -c demo-baseline 0352eea5c7ceaac3a5fab07a6edce67542368be8
+git show eedd7d251fde13710d803e3fe4aa49a05f4170da:prompts/health-route.txt | shasum -a 256
 git status --short
 git rev-parse HEAD
 ```
 
-The published repository includes Cline's finished code. The `git switch` command checks out the **baseline** commit so you can replay the task on an application that initially serves only `GET /`. The baseline also includes `project-marker.txt`, which contains synthetic test data. Create another synthetic marker in a disposable host directory outside the project:
+The published repository includes Cline's finished code. The `git switch` command checks out the **baseline** commit so you can replay the task on an application that initially serves only `GET /`. The prompt is absent from that baseline tree. The `git show` command reads it from the pinned delivery commit already present in the clone; its SHA-256 output should be `83b40a65ecea054aeb4551a9e25bd77f5358ee8c868904f86deb6958ef2d0535`. The baseline also includes `project-marker.txt`, which contains synthetic test data. Create another synthetic marker in a disposable host directory outside the project:
 
 ```sh
 mkdir -p /private/tmp/docker-cline-sandbox-boundary
@@ -66,13 +67,18 @@ For the recorded route, choose **Sign in with ChatGPT**, finish the browser sign
 
 ## Run and review the bounded task
 
-The [exact prompt](prompts/health-route.txt) asks Cline to create `cline/health-route`, add and test `GET /health`, try both marker reads, and commit without pushing. From the **host** repository root, a shell equivalent of the recorded CLI invocation is:
+The [exact prompt](prompts/health-route.txt) asks Cline to create `cline/health-route`, add and test `GET /health`, try both marker reads, and commit without pushing. From the **host** repository root, read that prompt from the pinned delivery commit, even though your working tree is on the baseline. Check its hash before invoking Cline:
 
 ```sh
-sbx exec cline-flask-lab cline -P openai-codex --auto-approve true --json --timeout 600 "$(cat prompts/health-route.txt)"
+PROMPT_COMMIT=eedd7d251fde13710d803e3fe4aa49a05f4170da
+PROMPT_SHA256=83b40a65ecea054aeb4551a9e25bd77f5358ee8c868904f86deb6958ef2d0535
+test "$(git show "$PROMPT_COMMIT:prompts/health-route.txt" | shasum -a 256 | awk '{print $1}')" = "$PROMPT_SHA256"
+PROMPT_WITH_SENTINEL=$(git show "$PROMPT_COMMIT:prompts/health-route.txt"; printf x)
+PROMPT_TEXT=${PROMPT_WITH_SENTINEL%x}
+sbx exec cline-flask-lab cline -P openai-codex --auto-approve true --json --timeout 600 "$PROMPT_TEXT"
 ```
 
-The recorded run passed the same prompt as a single argument through a local subprocess wrapper to save its JSON events. Its actual tool actions, exit statuses, and test output are in the [sanitized action record](evidence/cline-tool-actions.md). The resulting Cline commit is `8d453345b237f5158e3efb061a4e6ee2eec1063a`; your replay will produce a different commit SHA. The health route returns:
+The sentinel preserves the prompt's trailing newline when shell command substitution reads the Git object. The recorded run passed the same prompt as a single argument through a local subprocess wrapper to save its JSON events. Its actual tool actions, exit statuses, and test output are in the [sanitized action record](evidence/cline-tool-actions.md). The resulting Cline commit is `8d453345b237f5158e3efb061a4e6ee2eec1063a`; your replay will produce a different commit SHA. The health route returns:
 
 ```json
 {"status":"ok"}
@@ -109,7 +115,7 @@ cat /private/tmp/docker-cline-sandbox-boundary/outside-marker.txt
 
 In the recorded private-copy run, Cline's file-read tool and a direct shell command both read the project marker successfully (the shell returned exit 0). Cline's shell command and an independent direct shell command both failed to read the host marker under `/private/tmp` (`No such file or directory`, exit 1). The host marker remained intact. A model declining a file read is not itself proof of an OS boundary; the direct shell control separates those observations. These results are specific to this configuration and these paths.
 
-The committed tests also passed after a stop and reconnect. An independent run of the listening Flask server returned HTTP 200 for `/` and `/health`, and HTTP 404 for `/missing`. The short [terminal recording](evidence/verification.cast) and [verification record](evidence/verification.md) show the observed results. Play the recording with `asciinema play evidence/verification.cast` if you have asciinema installed; viewing the application and replaying the task do not require it.
+The committed tests also passed after a stop and reconnect. An independent run of the listening Flask server returned HTTP 200 for `/` and `/health`, and HTTP 404 for `/missing`. The short [terminal recording](evidence/verification.cast) contains a printed authentication and task summary followed by verification output; it does not record the live sign-in or full Cline session. The [tool action record](evidence/cline-tool-actions.md) and [verification record](evidence/verification.md) provide the task details. Play the recording with `asciinema play evidence/verification.cast` if you have asciinema installed; viewing the application and replaying the task do not require it.
 
 ## Reconnect and clean up
 
