@@ -8,11 +8,7 @@ This is a readable extract of the original Cline CLI JSON event stream from the 
 - Cline branch: `cline/health-route`; Cline commit: `8d453345b237f5158e3efb061a4e6ee2eec1063a`.
 - CLI result: `completed`; process exit code: `0`; tool calls: `14`.
 
-Run command (from the host repository root):
-
-```sh
-sbx exec cline-flask-lab cline -P openai-codex --auto-approve true --json --timeout 600 "$(cat prompts/health-route.txt)"
-```
+For the recorded run, a local subprocess wrapper read the exact prompt file and passed its contents as one argument to `sbx exec cline-flask-lab cline` with `-P openai-codex --auto-approve true --json --timeout 600`. The wrapper saved the original JSON events outside this repository. For a fresh clone switched to the baseline, follow the [README's pinned prompt retrieval](../README.md#run-and-review-the-bounded-task); the prompt file is absent from the baseline working tree.
 
 ## 1. `run_commands`
 
@@ -398,6 +394,8 @@ A  tests/test_app.py
 ```
 
 ## 12. `run_commands`
+
+Cline submitted the following two commands in **one** `run_commands` tool call. The event stream records both outputs together, without a reliable per-command execution order. Command 2's baseline file list is consistent with it reading `HEAD` before Command 1's commit finished; do not read these entries as a sequential transcript. The post-commit check in action 14 independently shows `HEAD` at the new commit with only `app.py` and `tests/test_app.py` committed.
 
 Command 1:
 
